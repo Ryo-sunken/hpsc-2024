@@ -39,10 +39,11 @@ int main() {
     for (int j=1; j<ny-1; j++) {
       for (int i=1; i<nx-1; i++) {
         // Compute b[j][i]
-        b[j][i] = rho * (1. / dt *
-          ((u[j][i + 1] - u[j][i - 1]) / (2. * dx) + (v[j + 1][i] - v[j - 1][i]) / (2. * dy)) -
-          ((u[j][i + 1] - u[j][i - 1]) / (4. * dx * dx) - 2. * ((u[j + 1][i] - u[j - 1][i]) / (2. * dy) *
-            v[j][i + 1] - v[j][i - 1]) / (2. * dx)) - ((v[j + 1][i] - v[j - 1][i]) / (4. * dy * dy)));
+        float b1 = 1. / dt * ((u[j][i + 1] - u[j][i - 1]) / (2. * dx) + (v[j + 1][i] - v[j - 1][i]) / (2. * dy));
+        float b2 = (u[j][i + 1] - u[j][i - 1]) * (u[j][i + 1] - u[j][i - 1]) / (4. * dx * dx);
+        float b3 = 2. * ((u[j + 1][i] - u[j - 1][i]) / (2. * dy) * (v[j][i + 1] - v[j][i - 1]) / (2. * dx));
+        float b4 = (v[j + 1][i] - v[j - 1][i]) * (v[j + 1][i] - v[j - 1][i]) / (4. * dy * dy);
+        b[j][i] = rho * (b1 - b2 - b3 - b4);
       }
     }
     for (int it=0; it<nit; it++) {
