@@ -80,11 +80,11 @@ int main() {
       for (int i=1; i<nx-1; i++) {
 	      // Compute u[j][i] and v[j][i]
         u[j][i] = un[j][i] - un[j][i] * dt / dx * (un[j][i] - un[j][i - 1])
-                           - un[j][i] * dt / dy * (un[j][i] - un[j - 1][i])
+                           - vn[j][i] * dt / dy * (un[j][i] - un[j - 1][i])
                            - dt / (2. * rho * dx) * (p[j][i + 1] - p[j][i - 1])
                            + nu * dt / (dx * dx) * (un[j][i + 1] - 2. * un[j][i] + un[j][i - 1])
                            + nu * dt / (dy * dy) * (un[j + 1][i] - 2. * un[j][i] + un[j - 1][i]);
-        v[j][i] = vn[j][i] - vn[j][i] * dt / dx * (vn[j][i] - vn[j][i - 1])
+        v[j][i] = vn[j][i] - un[j][i] * dt / dx * (vn[j][i] - vn[j][i - 1])
                            - vn[j][i] * dt / dy * (vn[j][i] - vn[j - 1][i])
                            - dt / (2. * rho * dx) * (p[j + 1][i] - p[j - 1][i])
                            + nu * dt / (dx * dx) * (vn[j][i + 1] - 2. * vn[j][i] + vn[j][i - 1])
