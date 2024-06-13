@@ -41,9 +41,9 @@ int main() {
         // Compute b[j][i]
         float b1 = 1. / dt * ((u[j][i + 1] - u[j][i - 1]) / (2. * dx) + (v[j + 1][i] - v[j - 1][i]) / (2. * dy));
         float b2 = (u[j][i + 1] - u[j][i - 1]) * (u[j][i + 1] - u[j][i - 1]) / (4. * dx * dx);
-        float b3 = 2. * ((u[j + 1][i] - u[j - 1][i]) / (2. * dy) * (v[j][i + 1] - v[j][i - 1]) / (2. * dx));
+        float b3 = 2. * ((u[j + 1][i] - u[j - 1][i]) / (2. * dx) * (v[j][i + 1] - v[j][i - 1]) / (2. * dy));
         float b4 = (v[j + 1][i] - v[j - 1][i]) * (v[j + 1][i] - v[j - 1][i]) / (4. * dy * dy);
-        b[j][i] = rho * (b1 - b2 - b3 - b4);
+        b[j][i] = rho * dx * dx * dy * dy * (b1 - b2 - b3 - b4);
       }
     }
     for (int it=0; it<nit; it++) {
@@ -53,10 +53,9 @@ int main() {
       for (int j=1; j<ny-1; j++) {
         for (int i=1; i<nx-1; i++) {
 	        // Compute p[j][i]
-          p[j][i] = (dy * dy * (pn[j][i + 1] + pn[j][i - 1]) +
-                     dx * dx * (pn[j + 1][i] + pn[j - 1][i]) -
-                     b[j][i] * dx * dx * dy * dy) /
-                     (2. * (dx * dx + dy * dy));
+          float p1 = (pn[j][i + 1] + pn[j][i - 1]) * dy * dy;
+          float p2 = (pn[j + 1][i] + pn[j - 1][i]) * dx * dx;
+          p[j][i] = (p1 + p2 - b[j][i]) / (2. * (dx * dx + dy * dy));
 	      }
       }
       for (int j=0; j<ny; j++) {
@@ -79,16 +78,18 @@ int main() {
     for (int j=1; j<ny-1; j++) {
       for (int i=1; i<nx-1; i++) {
 	      // Compute u[j][i] and v[j][i]
-        u[j][i] = un[j][i] - un[j][i] * dt / dx * (un[j][i] - un[j][i - 1])
-                           - vn[j][i] * dt / dy * (un[j][i] - un[j - 1][i])
-                           - dt / (2. * rho * dx) * (p[j][i + 1] - p[j][i - 1])
-                           + nu * dt / (dx * dx) * (un[j][i + 1] - 2. * un[j][i] + un[j][i - 1])
-                           + nu * dt / (dy * dy) * (un[j + 1][i] - 2. * un[j][i] + un[j - 1][i]);
-        v[j][i] = vn[j][i] - un[j][i] * dt / dx * (vn[j][i] - vn[j][i - 1])
-                           - vn[j][i] * dt / dy * (vn[j][i] - vn[j - 1][i])
-                           - dt / (2. * rho * dx) * (p[j + 1][i] - p[j - 1][i])
-                           + nu * dt / (dx * dx) * (vn[j][i + 1] - 2. * vn[j][i] + vn[j][i - 1])
-                           + nu * dt / (dy * dy) * (vn[j + 1][i] - 2. * vn[j][i] + vn[j - 1][i]);
+        float u1 = un[j][i] * dt / dx * (un[j][i] - un[j][i - 1]);
+        float u2 = vn[j][i] * dt / dy * (un[j][i] - un[j - 1][i]);
+        float u3 = dt / (2. * rho * dx) * (p[j][i + 1] - p[j][i - 1]);
+        float u4 = dt / (dx * dx) * (un[j][i + 1] - 2. * un[j][i] + un[j][i - 1]);
+        float u5 = dt / (dy * dy) * (un[j + 1][i] - 2. * un[j][i] + un[j - 1][i]);
+        u[j][i] = un[j][i] - u1 - u2 - u3 + nu * (u4 + u5);
+        float v1 = un[j][i] * dt / dx * (vn[j][i] - vn[j][i - 1]);
+        float v2 = vn[j][i] * dt / dy * (vn[j][i] - vn[j - 1][i]);
+        float v3 = dt / (2. * rho * dx) * (p[j + 1][i] - p[j - 1][i]);
+        float v4 = dt / (dx * dx) * (vn[j][i + 1] - 2. * vn[j][i] + vn[j][i - 1]);
+        float v5 = dt / (dy * dy) * (vn[j + 1][i] - 2. * vn[j][i] + vn[j - 1][i]);
+        v[j][i] = vn[j][i] - v1 - v2 - v3 + nu * (v4 + v5);
       }
     }
     for (int j=0; j<ny; j++) {
